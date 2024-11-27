@@ -559,6 +559,7 @@
                                                 <option value="bare">Bare, useful when in chat mode</option>
                                                 <option value="llama3">LLama3 communication template</option>
                                                 <option value="mistral">Mistral communication template</option>
+                                                <option value="chatml">ChatML communication template</option>
                                                 <option value="deepseek">DeepSeek communication template</option>
                                             </select>
                                         </td>
