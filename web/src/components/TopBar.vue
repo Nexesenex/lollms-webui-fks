@@ -27,115 +27,77 @@
           </svg>
         </button>
         <Navigation></Navigation>
-        <div class="toolbar-button" @mouseleave="hideInfosMenu">
-            <div class="relative inline-block">
-                <!-- Infos menu positioned above the button -->
-                <div v-if="isInfosMenuVisible"  @mouseenter="showInfosMenu" class="absolute context-menu m-0 p-0 z-50 top-full right-0 transform rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-300 ease-out mb-2">
-                    <div class="p-4 container flex flex-col lg:flex-row items-center gap-2">
-                        <!-- SYSTEM STATUS -->
-                        <div class="flex gap-3 flex-1 items-center justify-end">
-                            <div v-if="isModelOK" title="Model is ok" class="btn-on cursor-pointer transition-transform hover:scale-110">
-                            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            </div>
-                            <div v-else title="Model is not ok" class="btn-off cursor-pointer transition-transform hover:scale-110">
-                            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M15 9L9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            </div>
-                            <div v-if="!isGenerating" title="Text is not being generated. Ready to generate" class="btn-on cursor-pointer transition-transform hover:scale-110">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path>
-                            </svg>
-                            </div>
-                            <div v-else title="Generation in progress..." class="svg-button cursor-pointer transition-transform hover:scale-110">
-                            <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            </div>
-                            <div v-if="isConnected" title="Connection status: Connected" class="btn-on cursor-pointer transition-transform hover:scale-110">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                            </div>
-                            <div v-else title="Connection status: Not connected" class="btn-off cursor-pointer transition-transform hover:scale-110">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                            </svg>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <ActionButton @click="restartProgram" icon="power" title="restart program" />
-                            <ActionButton @click="refreshPage" icon="refresh-ccw" title="refresh page" />
-                            <ActionButton href="/docs" icon="file-text" title="Fast API doc" />
-                        </div>
-
-                        <!-- SOCIALS -->
-                        <SocialIcon href="https://github.com/ParisNeo/lollms-webui" icon="github" />
-                        <SocialIcon href="https://www.youtube.com/channel/UCJzrg0cyQV2Z30SQ1v2FdSQ" icon="youtube" />
-                        <SocialIcon href="https://x.com/ParisNeo_AI" icon="x" />
-                        <SocialIcon href="https://discord.com/channels/1092918764925882418" icon="discord" />
-                
-                        <div class="relative group" title="Lollms News">
-                            <div @click="showNews()" class="text-2xl w-8 h-8 cursor-pointer transition-colors duration-300 svg-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                                <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                            </svg>
-                            </div>
-                            <span class="absolute hidden group-hover:block text-xs rounded py-1 px-2 top-full left-1/2 transform -translate-x-1/2 mt-2 whitespace-nowrap">
-                            Lollms News
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Info Button -->
-                <div @mouseenter="showInfosMenu" class="infos-hover-area">
-                    <button class="w-6 h-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" class="w-full h-full">
-                            <!-- Circle background -->
-                            <circle cx="12.5" cy="12.5" r="11.25" fill="#3498db"/>
-                            <!-- "i" stem -->
-                            <rect x="11.25" y="10" width="2.5" height="8.75" fill="white"/>
-                            <!-- "i" dot -->
-                            <circle cx="12.5" cy="6.25" r="1.25" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>      
+        <div>
+          <a 
+            href="https://github.com/ParisNeo/lollms-webui"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors duration-200 my-4 mx-2"
+          >
+            <svg 
+              class="w-5 h-5" 
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            <span class="font-medium" v-if="starCount">{{ starCount }}</span>
+          </a>
         </div>
-        <div v-if="is_fun_mode" 
-                title="Fun mode is on, press to turn off" 
-                class="w-8 h-8 cursor-pointer btn-on transition-colors duration-300"
-                @click="fun_mode_off()"
-        >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full animate-bounce">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                </svg>
-            </div>
-        <div 
-            v-else 
-            title="Fun mode is off, press to turn on" 
-            class="w-8 h-8 cursor-pointer btn-off transition-colors duration-300"
-            @click="fun_mode_on()"
-        >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="8" y1="15" x2="16" y2="15"></line>
-                <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                </svg>
-            </div>
-            <span class="absolute hidden group-hover:block text-xs rounded py-1 px-2 top-full left-1/2 transform -translate-x-1/2 mb-2 whitespace-nowrap">
-                {{ is_fun_mode ? 'Turn off fun mode' : 'Turn on fun mode' }}
-            </span>
+        <div class="relative">
+          <div v-if="is_fun_mode" 
+              title="Fun mode is on, press to turn off" 
+              class="w-10 h-10 cursor-pointer transform transition-all duration-300 
+                    hover:scale-110 active:scale-95 bg-yellow-400 rounded-full p-1
+                    hover:bg-yellow-300 dark:hover:bg-yellow-500"
+              @click="fun_mode_off()"
+          >
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  class="w-full h-full text-white animate-bounce"
+              >
+                  <circle cx="12" cy="12" r="10" stroke="black" stroke-width="1.5"/>
+                  <path d="M7 14c0 3 4 4 5 4s5-1 5-4M9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm8 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" 
+                        stroke="black" stroke-width="1.5"/>
+              </svg>
+          </div>
+          <div 
+              v-else 
+              title="Fun mode is off, press to turn on" 
+              class="w-10 h-10 cursor-pointer rounded-full 
+                    hover:bg-gray-100 dark:hover:bg-gray-800 
+                    transform transition-all duration-300 
+                    hover:scale-110 active:scale-95 p-1"
+              @click="fun_mode_on()"
+          >
+              <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2.5" 
+                  class="w-full h-full transition-colors duration-300"
+              >
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="8" y1="14" x2="16" y2="14"/>
+                  <circle cx="9" cy="9" r="1"/>
+                  <circle cx="15" cy="9" r="1"/>
+              </svg>
+          </div>
+          
+          <!-- Enhanced Tooltip -->
+          <div 
+              class="absolute pointer-events-none opacity-0 group-hover:opacity-100
+                    transition-opacity duration-200 -bottom-12 left-1/2 transform 
+                    -translate-x-1/2 bg-gray-900 text-white px-3 py-1.5 rounded-lg
+                    text-sm whitespace-nowrap shadow-xl z-50"
+          >
+              <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 
+                          border-solid border-4 border-transparent border-b-gray-900"/>
+              {{ is_fun_mode ? 'Disable fun mode' : 'Enable fun mode' }}
+          </div>
+      </div>
         <div v-if="isDarkMode" class="text-2xl svg-button hover:text-primary duration-150 cursor-pointer  w-50 h-50 ml-2" title="Switch to Light theme" @click="themeSwitch()">
             <i data-feather="sun"></i>
         </div>
@@ -143,23 +105,73 @@
             <i data-feather="moon"></i>
         </div>               
         <div class="relative ml-2">
-            <button @click="toggleLanguageMenu" class="svg-button">
-            {{ $store.state.language.slice(0, 2) }}
-            </button>
-            <div v-if="isLanguageMenuVisible" ref="languageMenu" class="container context-menu absolute left-0 mt-1 rounded shadow-lg z-10 overflow-y-auto scrollbar-thin" style="position: absolute; top: 100%; width: 200px; max-height: 300px; overflow-y: auto;">
-              <ul style="list-style-type: none; padding-left: 0; margin-left: 0;">
-                  <li v-for="language in languages" :key="language" class="relative flex items-center" style="padding-left: 0; margin-left: 0;">
-                  <button @click="deleteLanguage(language)" class="mr-2 ml-2 text-red-500 hover:text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 rounded-full">✕</button>
-                  <div @click="selectLanguage(language)" :class="{'cursor-pointer hover:bg-blue-500 hover:text-white py-2 px-4 block whitespace-no-wrap': true, 'bg-blue-500 text-white': language === $store.state.language, 'flex-grow': true}">
-                      {{ language }}
-                  </div>
-                  </li>
-                  <li class="cursor-pointer py-0 px-0 block whitespace-no-wrap">
-                  <input type="text" v-model="customLanguage" @keyup.enter.prevent="addCustomLanguage" placeholder="Enter language..." class="bg-transparent mr-2 ml-2 border border-gray-300 rounded py-0 px-0 mx-0 my-1 w-full">
-                  </li>
-              </ul>
-            </div>
-        </div>
+          <button 
+              @click="toggleLanguageMenu" 
+              class="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+              aria-haspopup="true"
+              :aria-expanded="isLanguageMenuVisible"
+          >
+              <span class="font-medium">{{ $store.state.language.slice(0, 2) }}</span>
+              <svg 
+                  class="w-4 h-4 transition-transform" 
+                  :class="{ 'rotate-180': isLanguageMenuVisible }"
+                  viewBox="0 0 24 24"
+              >
+                  <path d="M7 10l5 5 5-5z" fill="currentColor" />
+              </svg>
+          </button>
+
+          <Transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="transform scale-95 opacity-0"
+              enter-to-class="transform scale-100 opacity-100"
+              leave-active-class="transition duration-150 ease-in"
+              leave-from-class="transform scale-100 opacity-100"
+              leave-to-class="transform scale-95 opacity-0"
+          >
+              <div 
+                  v-if="isLanguageMenuVisible" 
+                  ref="languageMenu" 
+                  class="absolute left-0 mt-1 w-64 rounded-lg shadow-lg bg-white border border-gray-200 z-10"
+                  role="menu"
+              >
+                  <ul class="py-2 max-h-72 overflow-y-auto">
+                      <li 
+                          v-for="language in languages" 
+                          :key="language" 
+                          class="group flex items-center px-3 py-2 hover:bg-gray-50"
+                      >
+                          <button 
+                              @click="deleteLanguage(language)" 
+                              class="p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
+                              :aria-label="`Delete ${language}`"
+                          >
+                              <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor" />
+                              </svg>
+                          </button>
+                          <div 
+                              @click="selectLanguage(language)" 
+                              class="flex-grow px-3 py-1 cursor-pointer rounded-md transition-colors"
+                              :class="language === $store.state.language ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'"
+                              role="menuitem"
+                          >
+                              {{ language }}
+                          </div>
+                      </li>
+                      <li class="px-3 py-2 border-t border-gray-100">
+                          <input 
+                              type="text" 
+                              v-model="customLanguage" 
+                              @keyup.enter.prevent="addCustomLanguage"
+                              placeholder="Add new language..." 
+                              class="w-full px-3 py-2 rounded-md border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                          >
+                      </li>
+                  </ul>
+              </div>
+          </Transition>
+      </div>
 
         <div class="relative inline-flex ml-2">
           <!-- Enhanced custom button -->
@@ -244,7 +256,88 @@
             </div>
           </transition>
         </div>    
-        
+
+        <div class="toolbar-button" @mouseleave="hideInfosMenu">
+            <div class="relative inline-block">
+                <!-- Infos menu positioned above the button -->
+                <div v-if="isInfosMenuVisible"  @mouseenter="showInfosMenu" class="absolute context-menu m-0 p-0 z-50 top-full right-0 transform rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-300 ease-out mb-2">
+                    <div class="p-4 container flex flex-col lg:flex-row items-center gap-2">
+                        <!-- SYSTEM STATUS -->
+                        <div class="flex gap-3 flex-1 items-center justify-end">
+                            <div v-if="isModelOK" title="Model is ok" class="btn-on cursor-pointer transition-transform hover:scale-110">
+                            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            </div>
+                            <div v-else title="Model is not ok" class="btn-off cursor-pointer transition-transform hover:scale-110">
+                            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15 9L9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            </div>
+                            <div v-if="!isGenerating" title="Text is not being generated. Ready to generate" class="btn-on cursor-pointer transition-transform hover:scale-110">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path>
+                            </svg>
+                            </div>
+                            <div v-else title="Generation in progress..." class="svg-button cursor-pointer transition-transform hover:scale-110">
+                            <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            </div>
+                            <div v-if="isConnected" title="Connection status: Connected" class="btn-on cursor-pointer transition-transform hover:scale-110">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            </div>
+                            <div v-else title="Connection status: Not connected" class="btn-off cursor-pointer transition-transform hover:scale-110">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                            </svg>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <ActionButton @click="restartProgram" icon="power" title="restart program" />
+                            <ActionButton @click="refreshPage" icon="refresh-ccw" title="refresh page" />
+                            <ActionButton href="/docs" icon="file-text" title="Fast API doc" />
+                        </div>
+
+                        <!-- SOCIALS -->
+                        <SocialIcon href="https://github.com/ParisNeo/lollms-webui" icon="github" />
+                        <SocialIcon href="https://www.youtube.com/channel/UCJzrg0cyQV2Z30SQ1v2FdSQ" icon="youtube" />
+                        <SocialIcon href="https://x.com/ParisNeo_AI" icon="x" />
+                        <SocialIcon href="https://discord.com/channels/1092918764925882418" icon="discord" />
+                
+                        <div class="relative group" title="Lollms News">
+                            <div @click="showNews()" class="text-2xl w-8 h-8 cursor-pointer transition-colors duration-300 svg-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                                <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                            </svg>
+                            </div>
+                            <span class="absolute hidden group-hover:block text-xs rounded py-1 px-2 top-full left-1/2 transform -translate-x-1/2 mt-2 whitespace-nowrap">
+                            Lollms News
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Button -->
+                <div @mouseenter="showInfosMenu" class="infos-hover-area">
+                    <button class="w-6 h-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" class="w-full h-full">
+                            <!-- Circle background -->
+                            <circle cx="12.5" cy="12.5" r="11.25" fill="#3498db"/>
+                            <!-- "i" stem -->
+                            <rect x="11.25" y="10" width="2.5" height="8.75" fill="white"/>
+                            <!-- "i" dot -->
+                            <circle cx="12.5" cy="6.25" r="1.25" fill="white"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>      
+        </div>        
       </div>
     </div>
   </div>
@@ -288,6 +381,7 @@ export default {
   },
   data() {
     return {
+      starCount:null,
       themeDropdownOpen: false,
       currentTheme: localStorage.getItem('preferred-theme') || 'default',
       availableThemes: [],
@@ -367,6 +461,14 @@ export default {
     } catch (err) {
       this.error = 'Failed to initialize theme system'
       console.error(err)
+    }
+
+    try {
+      const response = await fetch('https://api.github.com/repos/ParisNeo/lollms-webui')
+      const data = await response.json()
+      this.starCount = data.stargazers_count
+    } catch (error) {
+      console.error('Error fetching GitHub stars:', error)
     }
   },  
   beforeUnmount() {

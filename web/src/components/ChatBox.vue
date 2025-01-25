@@ -159,7 +159,7 @@
                         
                         <div class="w-fit">
                             <PersonalitiesCommands
-                                v-if="this.$store.state.personalities_ready && this.$store.state.mountedPersArr[this.$store.state.config.active_personality_id].commands!=''" 
+                                v-if="this.$store.state.mountedPersArr[this.$store.state.config.active_personality_id].commands!=''" 
                                 :commandsList="this.$store.state.mountedPersArr[this.$store.state.config.active_personality_id].commands"
                                 :sendCommand="sendCMDEvent"
                                 :on-show-toast-message="onShowToastMessage"
@@ -168,9 +168,9 @@
                         </div>   
                         <div class="w-fit">
                             <PersonalitiesCommands
-                                v-if="isDataSourceNamesValid"
+                                v-if="isdataLakeNamesValid"
                                 :icon="'feather:book'"
-                                :commandsList="dataSourceNames"
+                                :commandsList="dataLakeNames"
                                 :sendCommand="mountDB"
                                 :on-show-toast-message="onShowToastMessage"
                                 ref="databasesList"
@@ -234,7 +234,7 @@
 
                             <ChatBarButton 
                                 v-if="$store.state.config.active_tts_service != 'None' && $store.state.config.active_tts_service != null && this.$store.state.config.active_stt_service!='None' && this.$store.state.config.active_stt_service!=null"
-                                @click="is_rt ? stopRTCom : startRTCom"
+                                @click="updateRT"
                                 :class="is_rt ? 'bg-red-500 dark:bg-red-600' : 'bg-green-500 dark:bg-green-600'"
                                 title="Real-time audio mode"
                             >
@@ -478,34 +478,33 @@ export default {
         isCompactMode() {
             return this.$store.state.view_mode === 'compact';
         },
-        isDataSourceNamesValid() {
-            console.log('dataSourceNames:', this.dataSourceNames);
-            console.log('Type of dataSourceNames:', typeof this.dataSourceNames);
-            return Array.isArray(this.dataSourceNames) && this.dataSourceNames.length > 0;
+        isdataLakeNamesValid() {
+            console.log('dataLakeNames:', this.dataLakeNames);
+            console.log('Type of dataLakeNames:', typeof this.dataLakeNames);
+            return Array.isArray(this.dataLakeNames) && this.dataLakeNames.length > 0;
         },        
-        dataSourceNames() {
-            console.log("dataSourceNames", this.$store.state.config.rag_databases);
-            // Extract the names from the rag_databases array and transform them into the desired format
-            const formattedDataSources = this.$store.state.config.rag_databases.map(dataSource => {
-                console.log("entry", dataSource);
-                const parts = dataSource.split('::');
-                console.log("extracted", parts[0]);
-
-                const isMounted = dataSource.endsWith('mounted');
-                const icon = isMounted ? 'feather:check' : '';
-
+        dataLakeNames() {
+            console.log("rag_databases", this.$store.state.config.datalakes);
+            // Extract the names from the combined array and transform them into the desired format
+            const formattedDataSources = this.$store.state.config.datalakes.map(dataLake => {
+                console.log("entry", dataLake);
+                
+                const icon = dataLake.mounted ? 'feather:check' : '';
+                
                 console.log("icon decision", icon);
 
                 return {
-                    name: parts[0], 
-                    value: parts[0] || 'default_value', 
-                    icon: icon, 
-                    help: 'mounts the database'
+                    name: dataLake.alias,
+                    value: dataLake.alias || 'default_value',
+                    icon: icon,
+                    help: 'mounts the datalake'
                 };
             });
-            console.log("formatted data sources", formattedDataSources);
+
+            console.log("formatted datalake", formattedDataSources);
             return formattedDataSources;
-        },    
+        }
+
     },
     methods: { 
         showSendMenu() {
@@ -631,6 +630,15 @@ export default {
         makeAnEmptyAIMessage() {
             this.$emit('createEmptyAIMessage')
         },
+        updateRT() {
+            console.log("Updating rt status")
+            if(this.is_rt){
+                this.stopRTCom();
+            }
+            else{
+                this.startRTCom();
+            }             
+        },
         startRTCom(){
             this.is_rt = true
             console.log("is_rt:",this.is_rt)
@@ -719,7 +727,7 @@ export default {
             this.$emit('sendCMDEvent', cmd)
         },
         async mountDB(cmd){
-            await axios.post('/toggle_mount_rag_database', {"client_id":this.$store.state.client_id,"database_name":cmd})
+            await axios.post('/toggle_mount_rag_database', {"client_id":this.$store.state.client_id,"datalake_name":cmd})
             await this.$store.dispatch('refreshConfig');
             console.log("Refreshed")
 

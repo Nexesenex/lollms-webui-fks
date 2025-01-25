@@ -69,7 +69,7 @@
     </transition>
     <transition name="slide-right">
     <div  v-if="showLeftPanel"
-        class="relative flex flex-col no-scrollbar shadow-lg min-w-[15rem] max-w-[15rem]"
+        class="relative flex flex-col no-scrollbar shadow-lg w-[16rem] "
         >
             <RouterLink :to="{ name: 'discussions' }" class="flex items-center space-x-2"> <!-- Added space-x-2 -->
                 <div class="logo-container"> <!-- Removed mr-1 -->
@@ -106,7 +106,63 @@
                     >
                         <i data-feather="plus"></i>
                     </button>
+                    <div class="toolbar-button" @mouseleave="hideSkillsLibraryMenu" v-if="!loading">
+                        <!-- Expandable menu positioned above the button -->
+                        <div v-show="isSkillsLibraryMenuVisible" @mouseenter="showSkillsLibraryMenu" class="absolute m-0 p-0 z-50 top-full left-0 transform bg-white dark:bg-bg-dark rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-300 ease-out mb-2">
+                            <div class="p-4 flex flex-wrap gap-2 items-center">
+                                <!-- Add to skills database -->
+                                <button 
+                                    v-if="!loading" 
+                                    type="button" 
+                                    @click.stop="addDiscussion2SkillsLibrary" 
+                                    title="Add this discussion content to skills database" 
+                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
+                                >
+                                    <i data-feather="plus"></i>
+                                </button>
 
+                                <!-- Toggle skills database -->
+                                <button 
+                                    v-if="!loading && $store.state.config.activate_skills_lib" 
+                                    type="button" 
+                                    @click.stop="toggleSkillsLib" 
+                                    title="Skills database is activated" 
+                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
+                                >
+                                    <i data-feather="check-circle"></i>
+                                </button>
+                                <button 
+                                    v-if="!loading && !$store.state.config.activate_skills_lib" 
+                                    type="button" 
+                                    @click.stop="toggleSkillsLib" 
+                                    title="Skills database is deactivated" 
+                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
+                                >
+                                    <i data-feather="x-octagon"></i>
+                                </button>
+                                
+                                <!-- Show skills database -->
+                                <button 
+                                    v-if="!loading" 
+                                    type="button" 
+                                    @click.stop="showSkillsLib" 
+                                    title="Show Skills database" 
+                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
+                                >
+                                    <i data-feather="book"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Menu toggle button -->
+                        <div @mouseenter="showSkillsLibraryMenu" class="menu-hover-area">
+                            <button class="w-8 h-8" title="Toggle Skills library menu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 4v16h16V4H4zm2 2h12v12H6V6zm2 2h2v8H8V8zm3 0h2v8h-2V8zm3 0h2v8h-2V8z" fill="currentColor"/>
+                                </svg>
+
+                            </button>
+                        </div>                        
+                    </div>
                     <div class="toolbar-button" @mouseleave="hideMenu" v-if="!loading">
                         <!-- Expandable menu positioned above the button -->
                         <div v-show="isMenuVisible" @mouseenter="showMenu" class="absolute m-0 p-0 z-50 top-full left-0 transform bg-white dark:bg-bg-dark rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-300 ease-out mb-2">
@@ -167,47 +223,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Add to skills database -->
-                                <button 
-                                    v-if="!loading" 
-                                    type="button" 
-                                    @click.stop="addDiscussion2SkillsLibrary" 
-                                    title="Add this discussion content to skills database" 
-                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
-                                >
-                                    <i data-feather="hard-drive"></i>
-                                </button>
-
-                                <!-- Toggle skills database -->
-                                <button 
-                                    v-if="!loading && $store.state.config.activate_skills_lib" 
-                                    type="button" 
-                                    @click.stop="toggleSkillsLib" 
-                                    title="Skills database is activated" 
-                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
-                                >
-                                    <i data-feather="check-circle"></i>
-                                </button>
-                                <button 
-                                    v-if="!loading && !$store.state.config.activate_skills_lib" 
-                                    type="button" 
-                                    @click.stop="toggleSkillsLib" 
-                                    title="Skills database is deactivated" 
-                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
-                                >
-                                    <i data-feather="x-octagon"></i>
-                                </button>
-
-                                <!-- Show skills database -->
-                                <button 
-                                    v-if="!loading" 
-                                    type="button" 
-                                    @click.stop="showSkillsLib" 
-                                    title="Show Skills database" 
-                                    class="text-3xl hover:text-secondary dark:hover:text-secondary-light duration-150 active:scale-95"
-                                >
-                                    <i data-feather="book"></i>
-                                </button>
 
                                 <!-- Loading spinner -->
                                 <div v-if="loading" title="Loading.." class="flex justify-center">
@@ -485,8 +500,10 @@
                                 </div>
                             </div>
 
-                            <div @mouseenter="showPersonalitiesMenu" class="personalities-hover-area">
-                                <MountedPersonalities ref="mountedPers" :onShowPersList="onShowPersListFun" :onReady="onPersonalitiesReadyFun"/>
+                            <div class="personalities-container">
+                                <div @mouseenter="showPersonalitiesMenu" class="personalities-hover-area">
+                                <MountedPersonalities ref="mountedPers" :onShowPersList="onShowPersList" :onReady="onPersonalitiesReady"/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -582,10 +599,11 @@
                 <div class="mx-0 flex flex-col flex-grow  w-full " :class="isDragOverDiscussion ? 'pointer-events-none' : ''">
                     <div id="dis-list" :class="filterInProgress ? 'opacity-20 pointer-events-none' : ''"
                         class="flex flex-col flex-grow w-full pb-80">
-                        <TransitionGroup v-if="list.length > 0" name="list">
-                            <Discussion v-for="(item, index) in list" :key="item.id" :id="item.id" :title="item.title"
+                        <TransitionGroup v-if="discussionsList.length > 0" name="discussionsList">
+                            <Discussion v-for="(item, index) in discussionsList" :key="item.id" :id="item.id" :title="item.title"
                                 :selected="currentDiscussion.id == item.id" :loading="item.loading" :isCheckbox="isCheckbox"
-                                :checkBoxValue="item.checkBoxValue" 
+                                :checkBoxValue="item.checkBoxValue"
+                                :openfolder_enabled="true"
                                 @select="selectDiscussion(item)"
                                 @delete="deleteDiscussion(item.id)" 
                                 @openFolder="openFolder"
@@ -593,7 +611,7 @@
                                 @makeTitle="makeTitle"
                                 @checked="checkUncheckDiscussion" />
                         </TransitionGroup>
-                        <div v-if="list.length < 1"
+                        <div v-if="discussionsList.length < 1"
                             class="gap-2 py-2 my-2 hover:shadow-md hover:bg-primary-light dark:hover:bg-primary rounded-md p-2 duration-75 group cursor-pointer">
                             <p class="px-3">No discussions are found</p>
                         </div>
@@ -851,6 +869,24 @@
 
 
 <style scoped>
+.personalities-container {
+  position: relative;
+}
+
+.skills-lib-icon {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  z-index: 10;
+  font-size: 5px; /* Adjust this value to change the icon size */
+  width: 2px; /* Match this to the font-size */
+  height: 2px; /* Match this to the font-size */
+}
+
+.skills-lib-icon i {
+  width: 2px;
+  height: 2px;
+}
 @keyframes giggle {
     0%, 100% {
         transform: translateX(0) rotate(0deg) scale(1);
@@ -1284,13 +1320,12 @@ export default {
                 "LoLLMs' version naming often contains clever easter eggs and references to AI advancements.",
                 "The 'Strawberry' version of LoLLMs was a playful nod to ChatGPT's internal codename for one of its versions.",
                 "The 'Saïph' version name was an intentional reference to Orion, anticipating OpenAI's rumored AGI-capable model codenamed 'Orion'.",
-                "LoLLMs' evolution can be traced through its version names: Warp, Starship, Robot, Brainwave, Strawberry, Feather and Saïph.",
+                "LoLLMs' evolution can be traced through its version names: Warp, Starship, Robot, Brainwave, Strawberry, Feather, Saïph, Nexus, Pulsar.",
                 "Each LoLLMs version name reflects either technological advancement or pays homage to significant developments in AI.",
                 "'Warp' and 'Starship' versions symbolized the quantum leap in AI capabilities and speed improvements.",
                 "'Robot' represented the system's growing autonomy and ability to perform complex tasks.",
                 "'Brainwave' highlighted the neural network aspects and cognitive capabilities of the system.",
                 "LoLLMs' version naming shows ParisNeo's keen awareness of industry trends and playful approach to development.",   
-                // New facts to add to the interestingFacts array
                 "LoLLMs can generate and visualize mathematical equations using LaTeX, making it a powerful tool for scientific documentation.",
                 "The system's multimodel capabilities allow it to analyze medical images, architectural blueprints, and technical diagrams.",
                 "LoLLMs includes a unique feature called 'personality system' that allows it to adapt its communication style and expertise.",
@@ -1329,7 +1364,26 @@ export default {
                 "The Great Wall of China is not visible from space with the naked eye, contrary to popular belief.",
                 "There are more possible ways to shuffle a deck of 52 cards than there are atoms on Earth.",
                 "The first computer virus was created in 1983 as an experiment.",
-                "The speed of light in a vacuum is exactly 299,792,458 meters per second."
+                "The speed of light in a vacuum is exactly 299,792,458 meters per second.",
+
+                "ParisNeo started coding at age 11 after an older programmer refused to teach him BASIC programming",
+                "ParisNeo learned BASIC by reverse engineering other people's games, even before he learned English",
+                "At age 12, ParisNeo co-created SAIF14, a suite of programs on a Tandy 1000 computer built by two kids",
+                "LoLLMs runs on a custom-built gaming PC that ParisNeo assembled and configured himself",
+                "The project started as a simple Chrome plugin called 'chatgpt personality selector'",
+                "ParisNeo's summer bet involved watching The Matrix 60 times in one month (twice daily) while his uncle gave up",
+                "The name LoLLMs was inspired by 'Lord of the Rings', positioning itself as 'one tool to rule them all'",
+                "LoLLMs has a 'Personalities Zoo' with over 500 different AI personas",
+                "The project evolved from handling just language models to becoming a multimodal system, hence the 'M' in LoLLMs",
+                "ParisNeo's difficulty with academic writing led him to develop AI solutions for writing assistance",
+                "LoLLMs' development was influenced by science fiction concepts from Wall-E, Terminator, and The Hitchhiker's Guide to the Galaxy",
+                "The project went from being 'GPT4All WebUI' to 'Lord of Large Language Models' before becoming 'Lord of Large Language & Multimodal Systems'",
+                "ParisNeo received early access to GPT-3 and used it to push the boundaries of what was possible with AI",
+                "The project maintains a philosophy of 'Don't panic, bring a towel, and trust in AI' - a reference to The Hitchhiker's Guide to the Galaxy",
+                "Despite having multiple patents in various fields, ParisNeo's interest in AI was sparked when he read about AlexNet in 2012",
+                "LoLLMs receives daily updates, similar to course corrections on a starship",
+                "ParisNeo's journey into programming shows his determination - he taught himself BASIC by reverse engineering games before he even knew English",
+                "Version 17 of LoLLMs, nicknamed 'Pulsar', draws inspiration from the most precise natural clocks in the universe - pulsating neutron stars. Just as pulsars emit precise, regular signals that help navigate spacecraft, LoLLMs Pulsar orchestrates precise communication between different AI systems. The version number 17 wasn't just sequential - pulsars rotate up to 1.7 thousand times per second, making '17' a cosmic nod to these incredible stellar lighthouses of space!"
             ],
             randomFact: "",            
             showPlaceholderModal: false,
@@ -1344,6 +1398,7 @@ export default {
             personalitySearchQuery: '',
             isSearching: false,
             isPersonalitiesMenuVisible: false,
+            isSkillsLibraryMenuVisible: false,
             isModelsMenuVisible:false,
             isBindingsMenuVisible: false,
             isMenuVisible: false,
@@ -1482,7 +1537,7 @@ export default {
                 SENDER_TYPES_AI                 : 1, // Sent by ai
                 SENDER_TYPES_SYSTEM             : 2, // Sent by athe system
             },
-            list                                : [], // Discussion list
+            discussionsList                                : [], // Discussion list
             tempList                            : [], // Copy of Discussion list (used for keeping the original list during filtering discussions/searching action)
             currentDiscussion                   : {}, // Current/selected discussion id
             discussionArr                       : [],
@@ -1517,11 +1572,29 @@ export default {
             
             this.randomFact = newFact;
         },        
-        handleOnTalk(pers){
-            console.log("talking")
-            this.showPersonalities=false
-            this.$store.state.toast.showToast(`Personality ${pers.name} is Talking`, 4, true)
-            this.onTalk(pers)
+        async handleOnTalk(){
+            const pers = this.mountedPers
+            console.log("pers:",pers)
+            this.isGenerating = true;
+            this.setDiscussionLoading(this.currentDiscussion.id, this.isGenerating);
+            let res = await axios.get('/get_generation_status', {})
+            if (res) {
+                //console.log(res.data.status);
+                if (!res.data.status) {
+                    const id = this.$store.state.config.personalities.findIndex(item => item === pers.full_path)
+                    const obj = {
+                    client_id:this.$store.state.client_id,
+                    id: id
+                    }
+                    res = await axios.post('/select_personality', obj);
+
+                    console.log('Generating message from ',res.data.status);
+                    socket.emit('generate_msg_from', { id: -1 });
+                }
+                else {
+                    console.log("Already generating");
+                }
+            }
         },
         onPersonalitiesReadyFun(){
             this.$store.state.personalities_ready = true;
@@ -1558,8 +1631,6 @@ export default {
 
                 //this.settingsChanged = true
                 const pers_path = pers.full_path
-                console.log("pers_path",pers_path)
-                console.log("this.$store.state.config.personalities",this.$store.state.config.personalities)
                 if (this.$store.state.config.personalities.includes(pers_path)) {
 
                     const res = await this.select_personality(pers)
@@ -1573,7 +1644,6 @@ export default {
                     await this.$store.dispatch('fetchLanguage');
                     await this.$store.dispatch('fetchisRTOn');
                     
-                    console.log('pers is mounted', res)
 
                     if (res && res.status && res.active_personality_id > -1) {
                         this.$store.state.toast.showToast("Selected personality:\n" + pers.name, 4, true)
@@ -1583,7 +1653,6 @@ export default {
                     }
 
                 } else {
-                    console.log('mounting pers')
                 }
 
                 this.$emit('personalitySelected')
@@ -1600,7 +1669,6 @@ export default {
         async select_personality(pers) {
             if (!pers) { return { 'status': false, 'error': 'no personality - select_personality' } }
             const pers_path = pers.full_path
-            console.log("Selecting personality ",pers_path)
             const id = this.$store.state.config.personalities.findIndex(item => item === pers_path)
 
             const obj = {
@@ -1632,6 +1700,15 @@ export default {
             clearTimeout(this.hideMenuTimeout);
             this.isPersonalitiesMenuVisible = true
         },
+        showSkillsLibraryMenu() {
+            clearTimeout(this.hideSkillsLibraryMenuTimeout);
+            this.isSkillsLibraryMenuVisible = true
+        },
+        hideSkillsLibraryMenu() {
+            this.hideMenuTimeout = setTimeout(() => {
+                this.isSkillsLibraryMenuVisible = false;
+            }, 300); // 300ms delay before hiding the menu            
+        },
         hidePersonalitiesMenu() {
             this.hideMenuTimeout = setTimeout(() => {
                 this.isPersonalitiesMenuVisible = false;
@@ -1655,7 +1732,6 @@ export default {
             }, 300); // 300ms delay before hiding the menu            
         },        
         setBinding(selectedBinding){
-            console.log("Setting binding to "+selectedBinding.name);
             this.selecting_binding=true
             this.selectedBinding = selectedBinding
             this.$store.state.messageBox.showBlockingMessage("Loading binding")
@@ -1666,8 +1742,6 @@ export default {
                         setting_value: selectedBinding.name
                     }).then(async (response) => {
                 this.$store.state.messageBox.hideMessage()
-                console.log("UPDATED");
-                console.log(response);
                 await this.$store.dispatch('refreshConfig');    
                 await this.$store.dispatch('refreshBindings');
                 await this.$store.dispatch('refreshModelsZoo');
@@ -1692,7 +1766,6 @@ export default {
         },
 
         setModel(selectedModel){
-            console.log("Setting model to "+selectedModel.name);
             this.selecting_model=true
             this.selectedModel = selectedModel
             this.$store.state.messageBox.showBlockingMessage("Loading model")
@@ -1702,8 +1775,6 @@ export default {
                         setting_value: selectedModel.name
                     }).then(async (response) => {
                 this.$store.state.messageBox.hideMessage()
-                console.log("UPDATED");
-                console.log(response);
                 await this.$store.dispatch('refreshConfig');    
                 await this.$store.dispatch('refreshModels');
                 this.$store.state.toast.showToast(`Model changed to ${this.currentModel.name}`,4,true)
@@ -1721,9 +1792,6 @@ export default {
                 axios.get('/get_active_binding_settings').then(res => {
                     this.isLoading = false
                     if (res) {
-
-                        console.log('binding sett', res)
-
                         if (res.data && Object.keys(res.data).length > 0) {
 
                             // open form
@@ -1735,7 +1803,6 @@ export default {
                                     {client_id:this.$store.state.client_id, "settings":res}).then(response => {
 
                                             if (response && response.data) {
-                                                console.log('binding set with new settings', response.data)
                                                 this.$store.state.toast.showToast("Binding settings updated successfully!", 4, true)
 
                                             } else {
@@ -1767,23 +1834,18 @@ export default {
             }
         },
         async remount_personality(pers) {
-            console.log("Remounting personality ", pers)
             if (!pers) { return { 'status': false, 'error': 'no personality - mount_personality' } }
             try {
-                console.log("before")
                 const obj = {
                     client_id: this.$store.state.client_id,
                     category: pers.category,
                     folder: pers.folder,
                     language: pers.language
                 }
-                console.log("after")
                 const res = await axios.post('/remount_personality', obj);
-                console.log("Remounting personality executed:",res)
                 
 
                 if (res) {
-                    console.log("Remounting personality res")
                     this.$store.state.toast.showToast("Personality remounted", 4, true)
 
                     return res.data
@@ -1799,12 +1861,9 @@ export default {
 
         },      
         async unmountPersonality(pers) {
-            console.log("Unmounting personality:",pers)
             if (!pers) { return }
 
             const res = await this.unmount_personality(pers.personality || pers)
-
-            console.log(res)
             if (res.status) {
                 this.$store.state.config.personalities = res.personalities
                 this.$store.state.toast.showToast("Personality unmounted", 4, true)
@@ -1814,7 +1873,6 @@ export default {
                 // Select some other personality
                 const lastPers = this.$store.state.mountedPersArr[this.$store.state.mountedPersArr.length - 1]
 
-                console.log(lastPers, this.$store.state.mountedPersArr.length)
                 // const res2 = await this.select_personality(lastPers.personality)
                 const res2 = await this.select_personality(pers.personality)
                 if (res2.status) {
@@ -1906,17 +1964,14 @@ export default {
             this.rebooting_audio.play()
             this.$store.state.toast.showToast("Rebooting the app. Please wait...", 410, false)
             //this.$store.state.toast.showToast("Rebooting the app. Please wait...", 50, true);
-            console.log("this.$store.state.api_get_req",this.$store.state.api_get_req)
             setTimeout(()=>{
                 window.close();
             },2000)
         },  
         applyConfiguration() {
             this.isLoading = true;
-            console.log(this.$store.state.config)
             axios.post('/apply_settings', {"client_id":this.$store.state.client_id, "config":this.$store.state.config}, {headers: this.posts_headers}).then((res) => {
                 this.isLoading = false;
-                //console.log('apply-res',res)
                 if (res.data.status) {
 
                     this.$store.state.toast.showToast("Configuration changed successfully.", 4, true)
@@ -1954,8 +2009,6 @@ export default {
         handlePromptSelection(prompt) {
             this.selectedPrompt = prompt;
             const title = this.extractTitle(prompt)
-            console.log("title");
-            console.log(title);
             if (title){
                 this.previewPrompt = this.getPromptContent(prompt); // Initialize preview
             }
@@ -1982,8 +2035,6 @@ export default {
                 preview = preview.replace(regex, value || placeholder.fullText);
             });
             this.previewPrompt = preview;
-            console.log("previewPrompt")
-            console.log(this.previewPrompt)
         },
         escapeRegExp(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -2008,8 +2059,6 @@ export default {
             // Apply the final prompt and close modal
             this.finalPrompt = finalPrompt;
             this.showPlaceholderModal = false;
-            console.log("previewPrompt apply")
-            console.log(this.previewPrompt)
 
             this.setPromptInChatbox(this.getPromptContent(this.previewPrompt));
         },
@@ -2074,17 +2123,14 @@ export default {
                 });
 
             }
-            console.log(this.rightPanelCollapsed)
         }, 
         add_webpage(){
-            console.log("addWebLink received")
             this.$refs.web_url_input_box.showPanel();
         },
         addWebpage(){
 
             axios.post('/add_webpage', {"client_id":this.client_id, "url": this.$refs.web_url_input_box.inputText}, {headers: this.posts_headers}).then(response => {
                 if (response && response.status){
-                    console.log("Done")
                     this.recoverFiles()
                 }
             });
@@ -2097,7 +2143,6 @@ export default {
             this.progress_visibility_val = false;
         },
         update_progress(data){
-            console.log("Progress update")
             this.progress_value = data.value;
         },
         onSettingsBinding() {
@@ -2117,7 +2162,6 @@ export default {
                                     {client_id:this.$store.state.client_id, "settings":res}).then(response => {
 
                                             if (response && response.data) {
-                                                console.log('binding set with new settings', response.data)
                                                 this.$store.state.toast.showToast("Binding settings updated successfully!", 4, true)
 
                                             } else {
@@ -2165,18 +2209,11 @@ export default {
                 "client_id": this.client_id,
                 "name": typeof choice === 'string' ? choice : choice.name
             };
-            console.log("data:")
-            console.log(data)
             const res = await axios.post("/select_database", data, {headers: this.posts_headers});
             if(res.status){
-                console.log("Selected database")
                 this.$store.state.config = await axios.post("/get_config",{"client_id":this.client_id});
-                console.log("new config loaded :",this.$store.state.config)
                 let dbs = await axios.get("/list_databases")["data"];
-                console.log("New list of database: ",dbs)
-
                 this.$store.state.databases = dbs
-                console.log("New list of database: ",this.$store.state.databases)
                 location.reload();
             }
         
@@ -2227,14 +2264,12 @@ export default {
                     }
                 })
                 .catch(error => {
-                    console.log(error.message, 'save_configuration')
                     this.$store.state.messageBox.showMessage("Couldn't save settings!")
                     return { 'status': false }
                 });
 
         },        
         showToastMessage(text, duration, isok){
-            console.log("sending",text)
             this.$store.state.toast.showToast(text, duration, isok)
         },        
         toggleDropdown() {
@@ -2273,14 +2308,12 @@ export default {
         },
         load_discussion(id, next) {
             if (id) {
-                console.log("Loading discussion", id)
                 this.loading = true
                 this.discussionArr=[]
                 this.setDiscussionLoading(id, this.loading)
 
 
                 socket.on('discussion', (data)=>{
-                    console.log("Discussion recovered")
                     this.loading = false
                     this.setDiscussionLoading(id, this.loading)
                     if (data) {
@@ -2293,8 +2326,6 @@ export default {
                             item.status_message = "Done";
                         });                          
                         
-                        console.log("this.discussionArr")
-                        console.log(this.discussionArr)
                         if(next){
                             next()
                         }
@@ -2309,13 +2340,11 @@ export default {
             }
         },
         recoverFiles(){
-            console.log("Recovering files")
             axios.post('/get_discussion_files_list', {"client_id":this.$store.state.client_id}).then(res=>{
                 this.$refs.chatBox.filesList = res.data.files;
                 this.$refs.chatBox.isFileSentList= res.data.files.map(file => {
                     return true;
                 });
-                console.log(`Files recovered: ${this.$refs.chatBox.filesList}`)
             })
         },
         new_discussion(title) {
@@ -2324,8 +2353,8 @@ export default {
                 socket.on('discussion_created',(data)=>{
                     socket.off('discussion_created')
                     this.list_discussions().then(()=>{
-                        const index = this.list.findIndex((x) => x.id == data.id)
-                        const discussionItem = this.list[index]
+                        const index = this.discussionsList.findIndex((x) => x.id == data.id)
+                        const discussionItem = this.discussionsList[index]
                         this.selectDiscussion(discussionItem)
                         this.load_discussion(data.id,()=>{
                             this.loading = false
@@ -2338,7 +2367,6 @@ export default {
                         })
                     });
                 });
-                console.log("new_discussion ", title)
                 socket.emit('new_discussion', {title:title});
             } catch (error) {
                 console.log("Error: Could not create new discussion", error.message)
@@ -2376,10 +2404,10 @@ export default {
                     this.loading = false
                     this.setDiscussionLoading(id, this.loading)
                     if (res.status == 200) {
-                        const index = this.list.findIndex((x) => x.id == id)
-                        const discussionItem = this.list[index]
+                        const index = this.discussionsList.findIndex((x) => x.id == id)
+                        const discussionItem = this.discussionsList[index]
                         discussionItem.title = new_title
-                        this.tempList = this.list
+                        this.tempList = this.discussionsList
                     }
                 }
             } catch (error) {
@@ -2397,16 +2425,15 @@ export default {
                         client_id: this.client_id,
                         id: id,
                     }, {headers: this.posts_headers})
-                    console.log("Making title:",res)
 
                     this.loading = false
                     this.setDiscussionLoading(id, this.loading)
                     if (res.status == 200) {
-                        const index = this.list.findIndex((x) => x.id == id)
-                        const discussionItem = this.list[index]
+                        const index = this.discussionsList.findIndex((x) => x.id == id)
+                        const discussionItem = this.discussionsList[index]
                         discussionItem.title = res.data.title
                         
-                        this.tempList = this.list
+                        this.tempList = this.discussionsList
                     }
                 }
             } catch (error) {
@@ -2417,10 +2444,6 @@ export default {
         },        
         async delete_message(id) {
             try {
-                console.log(typeof id)
-                console.log(typeof this.client_id)
-                console.log(id)
-                console.log(this.client_id)
                 const res = await axios.post('/delete_message', { client_id: this.client_id, id: id }, {headers: this.posts_headers})
 
                 if (res) {
@@ -2477,10 +2500,6 @@ export default {
         },
         async edit_message(id, message, audio_url) {
             try {
-                console.log(typeof this.client_id)
-                console.log(typeof id)
-                console.log(typeof message)
-                console.log(typeof {audio_url:audio_url})
                 const res = await axios.post('/edit_message', {
                                                             client_id: this.client_id, 
                                                             id: id, 
@@ -2519,14 +2538,12 @@ export default {
         async import_multiple_discussions(jArray_) {
             try {
                 if (jArray_.length > 0) {
-                    console.log('sending import', jArray_)
                     const res = await axios.post('/import_multiple_discussions', {
                         client_id: this.$store.state.client_id,
                         jArray: jArray_
                     }, {headers: this.posts_headers})
 
                     if (res) {
-                        console.log('import response', res.data)
                         return res.data
                     }
                 }
@@ -2559,34 +2576,30 @@ export default {
                 this.filterInProgress = true
                 setTimeout(() => {
                     if (this.filterTitle) {
-                        this.list = this.tempList.filter((item) => item.title && item.title.includes(this.filterTitle))
+                        this.discussionsList = this.tempList.filter((item) => item.title && item.title.includes(this.filterTitle))
 
                     } else {
-                        this.list = this.tempList
+                        this.discussionsList = this.tempList
                     }
                     this.filterInProgress = false
                 }, 100)
             }
         },
         async selectDiscussion(item) {
-            console.log("Selecting a discussion")
             if(this.isGenerating){
                 this.$store.state.toast.showToast("You are currently generating a text. Please wait for text generation to finish or stop it before trying to select another discussion", 4, false)
                 return;
             }
 
             if (item) {
-                console.log(`Selecting discussion: ${this.currentDiscussion}`)
                 // When discussion is selected it loads the discussion array
                 if (this.currentDiscussion===undefined) {
-                    console.log(`Selecting discussion: ${this.currentDiscussion.id}`)
                     this.currentDiscussion = item
 
                     this.setPageTitle(item)
 
                     localStorage.setItem('selected_discussion', this.currentDiscussion.id)
                     const discussion_id = localStorage.getItem('selected_discussion')
-                    console.log(`Saved discussion to : ${discussion_id}`)
 
                     this.load_discussion(item.id, ()=>{
                         if (this.discussionArr.length > 1) {
@@ -2600,16 +2613,10 @@ export default {
                 }
                 else{
                     if (this.currentDiscussion.id != item.id) {
-                        console.log("item",item)
-                        console.log("this.currentDiscussion",this.currentDiscussion)
                         this.currentDiscussion = item
-                        console.log("this.currentDiscussion",this.currentDiscussion)
-
                         this.setPageTitle(item)
 
                         localStorage.setItem('selected_discussion', this.currentDiscussion.id)
-                        console.log(`Saved discussion to : ${this.currentDiscussion.id}`)
-
                         this.load_discussion(item.id, ()=>{
                             if (this.discussionArr.length > 1) {
                                 if (this.currentDiscussion.title === '' || this.currentDiscussion.title === null) {
@@ -2760,8 +2767,6 @@ export default {
             if(msgObj.sender_type==this.SENDER_TYPES_AI){
                 this.isGenerating = true
             }
-            console.log("Making a new message")
-            console.log('New message', msgObj);
             
             let responseMessage = {
                 sender:                 msgObj.sender,
@@ -2790,34 +2795,22 @@ export default {
             }
             
             responseMessage.status_message = "Warming up"
-            console.log(responseMessage)
             this.discussionArr.push(responseMessage)
-            // nextTick(() => {
-            //     const msgList = document.getElementById('messages-list')
+            nextTick(() => {
+                 const msgList = document.getElementById('messages-list')
 
-            //     this.scrollBottom(msgList)
-
-            // })
+                 this.scrollBottom(msgList)
+            });
 
             if (this.currentDiscussion.title === '' || this.currentDiscussion.title === null) {
                 this.changeTitleUsingUserMSG(this.currentDiscussion.id, msgObj.message)
             }
-            console.log("infos", msgObj)
-            /*
-            }
-            else {
-                this.$store.state.toast.showToast("It seems that no model has been loaded. Please download and install a model first, then try again.", 4, false)
-                this.isGenerating = false
-                this.setDiscussionLoading(this.currentDiscussion.id, this.isGenerating)
-                this.chime.play()
-            }*/
         },
         async talk(pers){
             this.isGenerating = true;
             this.setDiscussionLoading(this.currentDiscussion.id, this.isGenerating);
             let res = await axios.get('/get_generation_status', {})
             if (res) {
-                //console.log(res.data.status);
                 if (!res.data.status) {
                     const id = this.$store.state.config.personalities.findIndex(item => item === pers.full_path)
                     const obj = {
@@ -2825,8 +2818,6 @@ export default {
                     id: id
                     }
                     res = await axios.post('/select_personality', obj);
-
-                    console.log('Generating message from ',res.data.status);
                     socket.emit('generate_msg_from', { id: -1 });
                 }
                 else {
@@ -2850,7 +2841,6 @@ export default {
             this.setDiscussionLoading(this.currentDiscussion.id, this.isGenerating);
             axios.get('/get_generation_status', {}).then((res) => {
                 if (res) {
-                    //console.log(res.data.status);
                     if (!res.data.status) {
                         if(type=="internet"){
                             socket.emit('generate_msg_with_internet', { prompt: msg });
@@ -2909,24 +2899,7 @@ export default {
             });
         },
         sendCmd(cmd){
-            this.isGenerating = true;
-            // axios.post('/execute_personality_command', {command: cmd, parameters:[]})
-            //     .then((res) => {
-            //         if (res) {
-            //             if (res.status) {
-            //                 this.$store.state.toast.showToast("Command executed",4,true)
-            //             }
-            //             else
-            //                 this.$store.state.messageBox.showMessage("Error: Couldn't execute command!")
-            //             return res.data;
-            //         }
-            //     })
-            //     .catch(error => {
-            //         console.log(error.message, 'save_configuration')
-            //         this.$store.state.messageBox.showMessage("Couldn't save settings!")
-                    
-            //     });
-            
+            this.isGenerating = true;            
             socket.emit('execute_command', { command: cmd, parameters: [] });            
         },
         notify(notif){
@@ -2958,14 +2931,11 @@ export default {
             this.chime.play()
         },
         update_message(msgObj) {
-            console.log("update_message trigged")
-            console.log(msgObj)
             // Streams response message content from binding
             this.discussion_id = msgObj.discussion_id
             this.setDiscussionLoading(this.discussion_id, true);
 
             if (this.currentDiscussion.id == this.discussion_id) {
-                console.log("discussion ok")
                 //this.isGenerating = true;
                 const index = this.discussionArr.findIndex((x) => x.id == msgObj.id)
                 const messageItem = this.discussionArr[index]
@@ -2973,7 +2943,6 @@ export default {
                     messageItem && (msgObj.operation_type==this.operationTypes.MSG_OPERATION_TYPE_SET_CONTENT ||
                     msgObj.operation_type==this.operationTypes.MSG_OPERATION_TYPE_SET_CONTENT_INVISIBLE_TO_AI)
                 ) {
-                    console.log("Content triggered")
                     this.isGenerating = true;
                     messageItem.content = msgObj.content
                     messageItem.created_at = msgObj.created_at
@@ -2985,9 +2954,6 @@ export default {
                 else if(messageItem && msgObj.operation_type==this.operationTypes.MSG_OPERATION_TYPE_ADD_CHUNK){
                     this.isGenerating = true;
                     messageItem.content += msgObj.content
-                    console.log("Chunk triggered")
-                    //console.log("content")
-                    //console.log(messageItem.content)
                     messageItem.created_at              = msgObj.created_at
                     messageItem.started_generating_at   = msgObj.started_generating_at
                     messageItem.nb_tokens               = msgObj.nb_tokens
@@ -2995,17 +2961,14 @@ export default {
                     this.extractHtml()
                 } else if (msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_STEP || msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_STEP_START || msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_STEP_END_SUCCESS || msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_STEP_END_FAILURE){
                     if (Array.isArray(msgObj.steps)) {
+                        console.log("Received steps:", msgObj.steps)
                         messageItem.status_message = msgObj.steps[msgObj.steps.length - 1]["text"]
-                        console.log("step Content: ", messageItem.status_message)
                         messageItem.steps = msgObj.steps;
-                        console.log("steps: ", msgObj.steps)
                     } else {
                         console.error("Invalid steps data:", msgObj.steps);
                     }
 
                 } else if (msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_JSON_INFOS) {
-                    console.log("metadata triggered", msgObj.operation_type)
-                    console.log("metadata", msgObj.metadata)
                     if (typeof msgObj.metadata === 'string') {
                         try {
                             messageItem.metadata = JSON.parse(msgObj.metadata);
@@ -3019,8 +2982,6 @@ export default {
                         messageItem.metadata = { value: msgObj.metadata }; // For any other type, wrap in an object
                     }
                 } else if (msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_UI) {
-                    console.log("UI triggered",msgObj.operation_type)
-                    console.log("UI", msgObj.ui)
                     messageItem.ui = msgObj.ui
                 } else if (msgObj.operation_type == this.operationTypes.MSG_OPERATION_TYPE_EXCEPTION) {
                     this.$store.state.toast.showToast(msgObj.content, 5, false)
@@ -3041,11 +3002,11 @@ export default {
         async changeTitleUsingUserMSG(id, msg) {
             // If discussion is untitled or title is null then it sets the title to first user message.
 
-            const index = this.list.findIndex((x) => x.id == id)
-            const discussionItem = this.list[index]
+            const index = this.discussionsList.findIndex((x) => x.id == id)
+            const discussionItem = this.discussionsList[index]
             if (msg) {
                 discussionItem.title = msg
-                this.tempList = this.list
+                this.tempList = this.discussionsList
                 await this.edit_title(id, msg)
             }
 
@@ -3059,12 +3020,10 @@ export default {
         },
         loadLastUsedDiscussion() {
             // Checks local storage for last selected discussion
-            console.log("Loading last discussion")
             const id = localStorage.getItem('selected_discussion')
-            console.log("Last discussion id: ",id)
             if (id) {
-                const index = this.list.findIndex((x) => x.id == id)
-                const discussionItem = this.list[index]
+                const index = this.discussionsList.findIndex((x) => x.id == id)
+                const discussionItem = this.discussionsList[index]
                 if (discussionItem) {
                     this.selectDiscussion(discussionItem)
                 }
@@ -3083,9 +3042,9 @@ export default {
                 this.discussionArr = []
                 this.setPageTitle()
             }
-            this.list.splice(this.list.findIndex(item => item.id == id), 1)
+            this.discussionsList.splice(this.discussionsList.findIndex(item => item.id == id), 1)
 
-            this.createDiscussionList(this.list)
+            this.createDiscussionList(this.discussionsList)
         },
         async deleteDiscussionMulti() {
             // Delete selected discussions
@@ -3101,13 +3060,12 @@ export default {
                     this.discussionArr = []
                     this.setPageTitle()
                 }
-                this.list.splice(this.list.findIndex(item => item.id == discussionItem.id), 1)
+                this.discussionsList.splice(this.discussionsList.findIndex(item => item.id == discussionItem.id), 1)
             }
-            this.tempList = this.list
+            this.tempList = this.discussionsList
             this.isCheckbox = false
             this.$store.state.toast.showToast("Removed (" + deleteList.length + ") items", 4, true)
             this.showConfirmation = false
-            console.log("Multi delete done")
         },
         async deleteMessage(msgId) {
 
@@ -3123,7 +3081,6 @@ export default {
         },
         async openFolder(id){
             const json = JSON.stringify({ 'client_id': this.$store.state.client_id, 'discussion_id': id.id })   
-            console.log(json)     
             await axios.post(`/open_discussion_folder`, json, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3131,24 +3088,24 @@ export default {
         },
         async editTitle(newTitleObj) {
 
-            const index = this.list.findIndex((x) => x.id == newTitleObj.id)
-            const discussionItem = this.list[index]
+            const index = this.discussionsList.findIndex((x) => x.id == newTitleObj.id)
+            const discussionItem = this.discussionsList[index]
             discussionItem.title = newTitleObj.title
             discussionItem.loading = true
             await this.edit_title(newTitleObj.id, newTitleObj.title)
             discussionItem.loading = false
         },
         async makeTitle(editTitleObj) {
-            const index = this.list.findIndex((x) => x.id == editTitleObj.id)
+            const index = this.discussionsList.findIndex((x) => x.id == editTitleObj.id)
             await this.make_title(editTitleObj.id)
         },
 
         checkUncheckDiscussion(event, id) {
             // If checked = true and item is not in array then add item to list
-            const index = this.list.findIndex((x) => x.id == id)
-            const discussionItem = this.list[index]
+            const index = this.discussionsList.findIndex((x) => x.id == id)
+            const discussionItem = this.discussionsList[index]
             discussionItem.checkBoxValue = event.target.checked
-            this.tempList = this.list
+            this.tempList = this.discussionsList
         },
         selectAllDiscussions() {
 
@@ -3159,7 +3116,7 @@ export default {
                 this.tempList[i].checkBoxValue = !this.isSelectAll
             }
 
-            this.tempList = this.list
+            this.tempList = this.discussionsList
             this.isSelectAll = !this.isSelectAll
         },
         createDiscussionList(disList) {
@@ -3180,14 +3137,14 @@ export default {
                     return b.id - a.id
                 })
 
-                this.list = newDisList
+                this.discussionsList = newDisList
                 this.tempList = newDisList
             }
         },
         setDiscussionLoading(id, loading) {
             try{
-                const index = this.list.findIndex((x) => x.id == id)
-                const discussionItem = this.list[index]
+                const index = this.discussionsList.findIndex((x) => x.id == id)
+                const discussionItem = this.discussionsList[index]
                 discussionItem.loading = loading
             }
             catch{
@@ -3295,14 +3252,12 @@ export default {
             this.stop_gen()
             this.isGenerating = false
             this.setDiscussionLoading(this.currentDiscussion.id, this.isGenerating)
-            console.log("Stopped generating")
             nextTick(() => {
                 const msgList = document.getElementById('messages-list')
                 this.scrollBottom(msgList)
             })
         },
         finalMsgEvent(msgObj) {
-            console.log("Received message close order")
             let index=0;
             // Last message contains halucination suppression so we need to update the message content too
             this.discussion_id = msgObj.discussion_id
@@ -3334,7 +3289,6 @@ export default {
             index = this.discussionArr.findIndex((x) => x.id == msgObj.id)
             const messageItem = this.discussionArr[index]            
             messageItem.status_message = "Done"
-            console.log("final", msgObj)
             if(this.$store.state.config.auto_speak && (this.$store.state.config.xtts_enable && this.$store.state.config.xtts_use_streaming_mode)){
                 index = this.discussionArr.findIndex((x) => x.id == msgObj.id)
                 let message_component = this.$refs['msg-' + msgObj.id][0]
@@ -3442,12 +3396,11 @@ export default {
         async exportDiscussionsAsMarkdown() {
             // Export selected discussions
 
-            const discussionIdArr = this.list.filter((item) => item.checkBoxValue == true).map((item) => {
+            const discussionIdArr = this.discussionsList.filter((item) => item.checkBoxValue == true).map((item) => {
                 return item.id
             })
 
             if (discussionIdArr.length > 0) {
-                console.log("export", discussionIdArr)
                 let dateObj = new Date()
 
                 const year = dateObj.getFullYear();
@@ -3490,12 +3443,11 @@ export default {
         async exportDiscussionsAsJson() {
             // Export selected discussions
 
-            const discussionIdArr = this.list.filter((item) => item.checkBoxValue == true).map((item) => {
+            const discussionIdArr = this.discussionsList.filter((item) => item.checkBoxValue == true).map((item) => {
                 return item.id
             })
 
             if (discussionIdArr.length > 0) {
-                console.log("export", discussionIdArr)
                 let dateObj = new Date()
 
                 const year = dateObj.getFullYear();
@@ -3570,7 +3522,6 @@ export default {
             const index = this.personalityAvatars.findIndex((x) => x.name === sender)
             const pers = this.personalityAvatars[index]
             if (pers) {
-                console.log("Avatar",pers.avatar)
                 return pers.avatar
             }
 
@@ -3613,16 +3564,13 @@ export default {
     },
     async created() {
         this.randomFact = this.interestingFacts[Math.floor(Math.random() * this.interestingFacts.length)];
-        console.log("Created discussions view")
         const response = await axios.get('/get_versionID');
         const serverVersionId = response.data.versionId;
 
         socket.onopen = () => {
-            console.log('WebSocket connection established.');
             if (this.currentDiscussion!=null){
                 this.setPageTitle(item)
                 localStorage.setItem('selected_discussion', this.currentDiscussion.id)
-                console.log(`Saved discussion to : ${this.currentDiscussion.id}`)
                 this.load_discussion(item.id, ()=>{
                     if (this.discussionArr.length > 1) {
                         if (this.currentDiscussion.title === '' || this.currentDiscussion.title === null) {
@@ -3643,8 +3591,6 @@ export default {
         this.$nextTick(() => {
             feather.replace();
         });           
-
-        console.log("Connected to socket io")
         
         try{
         this.$store.state.loading_infos = "Getting version"
@@ -3652,7 +3598,7 @@ export default {
         await this.$store.dispatch('getVersion');
         }
         catch (ex){
-        console.log("Error cought:", ex)
+            console.log("Error cought:", ex)
         }
 
 
@@ -3662,9 +3608,7 @@ export default {
             await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for 100ms
         }
         this.$store.state.client_id = socket.id
-        console.log(this.$store.state.client_id)
         await this.$store.dispatch('refreshConfig');
-        console.log("Config ready")
         }
         catch (ex){
         console.log("Error cought:", ex)
@@ -3738,7 +3682,6 @@ export default {
 
         this.$store.state.isConnected=true;
         this.$store.state.client_id = socket.id
-        console.log("Ready")
         // Constructor
         this.setPageTitle()
         await this.list_discussions()
@@ -3749,7 +3692,6 @@ export default {
 
         socket.on('connected',this.socketIOConnected)
         socket.on('disconnected',this.socketIODisconnected)
-        console.log("Added events")
 
         // socket responses
         socket.on('show_progress', this.show_progress)
@@ -3762,9 +3704,8 @@ export default {
         socket.on('close_message', this.finalMsgEvent)
 
         socket.on('disucssion_renamed',(event)=>{
-            console.log('Received new title', event.discussion_id, event.title);
-            const index = this.list.findIndex((x) => x.id == event.discussion_id)
-            const discussionItem = this.list[index]
+            const index = this.discussionsList.findIndex((x) => x.id == event.discussion_id)
+            const discussionItem = this.discussionsList[index]
             discussionItem.title = event.title
             /*
             {
@@ -3774,7 +3715,6 @@ export default {
             }*/
         })
         socket.onclose = (event) => {
-            console.log('WebSocket connection closed:', event.code, event.reason);
             this.socketIODisconnected();
         };
         socket.on("connect_error", (error) => {
@@ -3811,8 +3751,6 @@ export default {
 
     },
     async activated() {
-        //console.log('settings changed acc', this.$store.state.settingsChanged)
-        // await this.getPersonalityAvatars()
         while (this.isReady === false) {
                 await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for 100ms
             }  
@@ -3860,20 +3798,15 @@ export default {
             },
         },   
         '$store.state.config.fun_mode': function(newVal, oldVal) {
-            console.log(`Fun mode changed from ${oldVal} to ${newVal}! 🎉`);
         },        
         '$store.state.isConnected': function(newVal, oldVal) {
             if (!this.isConnected){
                 this.$store.state.messageBox.showBlockingMessage("Server suddenly disconnected. Please reboot the server to recover the connection")
                 this.is_first_connection = false
-                console.log("this.is_first_connection set to false")
-                console.log(this.is_first_connection)
                 if(this.$store.state.config.activate_audio_infos)
                     this.connection_lost_audio.play()
             }
             else{
-                console.log("this.is_first_connection")
-                console.log(this.is_first_connection)
                 if(!this.is_first_connection){
                     this.$store.state.messageBox.hideMessage()
                     this.$store.state.messageBox.showMessage("Server connected.")
@@ -3896,7 +3829,7 @@ export default {
         filterTitle(newVal) {
             if (newVal == '') {
                 this.filterInProgress = true
-                this.list = this.tempList
+                this.discussionsList = this.tempList
                 this.filterInProgress = false
             }
         },
@@ -4129,7 +4062,7 @@ export default {
                 feather.replace()
 
             })
-            return this.list.filter((item) => item.checkBoxValue == true)
+            return this.discussionsList.filter((item) => item.checkBoxValue == true)
         }
     }
 }
@@ -4148,17 +4081,11 @@ import Message from '../components/Message.vue'
 import ChatBox from '../components/ChatBox.vue'
 import WelcomeComponent from '../components/WelcomeComponent.vue'
 
-import feather from 'feather-icons'
-
-import axios from 'axios'
-import { nextTick, TransitionGroup } from 'vue'
-
 import socket from '@/services/websocket.js'
 
 
 import { onMounted } from 'vue'
 import { initFlowbite } from 'flowbite'
-import { store } from '../main'
 
 
 
