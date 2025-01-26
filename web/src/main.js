@@ -277,7 +277,13 @@ export const store = createStore({
         try{
           let res = await axios.get('/get_lollms_webui_version', {});
           if (res) {
-              this.state.version = res.data
+            res = res.data
+            if(res.version_type!=""){
+              this.state.version = `${res.version_main}.${res.version_secondary} ${res.version_type} (${res.version_codename})`
+            }
+            else{
+              this.state.version = `${res.version_main}.${res.version_secondary} (${res.version_codename})`
+            }
           }
   
         }
